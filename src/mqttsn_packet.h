@@ -19,6 +19,35 @@ enum MsgTypes
 	MQTTSN_WILLTOPICUPD, MQTTSN_WILLTOPICRESP, MQTTSN_WILLMSGUPD, MQTTSN_WILLMSGRESP,
 };
 
+typedef union
+{
+	uint8_t all;
+	struct
+	{
+		uint8_t topic_id_type: 2;
+		uint8_t clean_session: 1;
+		uint8_t will: 1;
+		uint8_t retain: 1;
+		uint8_t qos: 2;
+		uint8_t dup: 1;
+	} bits;
+} Flags;
+
+
+class MessageID
+{
+	public:
+		MessageID() : _msg_id(0) {}
+	
+		uint16_t next() 
+		{
+			return _msg_id = (_msg_id == 0xFFFF) ? 1 : ++_msg_id;
+		}
+	
+	private:
+		uint16_t _msg_id;
+};
+
 /**
  * Get the name of a message
  */

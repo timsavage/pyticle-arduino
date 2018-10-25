@@ -5,133 +5,138 @@ namespace MQTTSN
 {
 
     /**
-     * Unpack the Advertise message
+     * Pack the Subscribe message
      */
-    uint8_t
-    unpack_advertise(uint8_t* gateway_id, uint16_t* duration, uint8_t* buffer, uint16_t buffer_len)
-    {
-        uint8_t result = 0;    
-        uint8_t* ptr = buffer;
-
-        *gateway_id = read_uint8(&ptr);
-        *duration = read_uint16(&ptr);
-
-        return result;
-    }
-
-    /**
-     * Pack the Search Gateway message
-     */
-    uint16_t
-    pack_searchgw(uint8_t* buffer, uint16_t buffer_len, uint8_t radius)
+    uint16_t 
+    pack_subscribe(uint8_t* buffer, uint16_t buffer_len, 
+                   uint8_t dup, uint8_t qos, uint16_t msg_id, const char* topic_name)
     {
         uint16_t result = 0;
         uint8_t* ptr = buffer;
+        Flags flags;
+        uint16_t topic_name_len = strlen(topic_name);
 
-        if ((result = write_length(&ptr, buffer_len, 2)) == 0) {
+        if ((result = write_length(&ptr, buffer_len, 4 + topic_name_len)) == 0) {
             goto exit;
         }
-        write_uint8(&ptr, MQTTSN_SEARCHGW);
-        write_uint8(&ptr, radius);
+        write_uint8(&ptr, MQTTSN_SUBSCRIBE);
+        flags.all = 0;
+        flags.bits.dup = dup;
+        flags.bits.qos = qos;
+        flags.bits.topic_id_type = 0b00;  // Topic name
+        write_uint8(&ptr, flags.all);
+        write_uint16(&ptr, msg_id);
+        write_string(&ptr, topic_name, topic_name_len);
+
+    exit:
+        return result;
+    }
+                   
+    uint16_t 
+    pack_subscribe(uint8_t* buffer, uint16_t buffer_len, 
+                   uint8_t dup, uint8_t qos, uint16_t msg_id, uint16_t topid_id)
+    {
+        uint16_t result = 0;
+        uint8_t* ptr = buffer;
+        Flags flags;
+
+        if ((result = write_length(&ptr, buffer_len, 6)) == 0) {
+            goto exit;
+        }
+        write_uint8(&ptr, MQTTSN_SUBSCRIBE);
+        flags.all = 0;
+        flags.bits.dup = dup;
+        flags.bits.qos = qos;
+        flags.bits.topic_id_type = 0b01;  // Topic id
+        write_uint8(&ptr, flags.all);
+        write_uint16(&ptr, msg_id);
+        write_uint16(&ptr, topid_id);
 
     exit:
         return result;
     }
 
     /**
-     * Unpack the Gateway Info message
+     * Unpack the Subscribe Acknowledge message
      */
     uint8_t
-    unpack_gwinfo(uint8_t* gateway_id, uint8_t* buffer, uint16_t buffer_len)
-    {
-        uint8_t result = 0;
-        uint8_t* ptr = buffer;
-
-        *gateway_id = read_uint8(&ptr);
-
-        return result;
-    }
-
-
-    /**
-     * Pack the Connect message
-     */
-    uint16_t
-    pack_connect(uint8_t* buffer, uint16_t buffer_len, uint8_t flags, uint16_t duration, const char* client_id)
-    {
-        uint16_t result = 0;    
-        uint8_t* ptr = buffer;
-        uint16_t client_id_len = strlen(client_id);
-
-        if ((result = write_length(&ptr, buffer_len, 5 + client_id_len)) == 0) {
-            goto exit;
-        }
-        write_uint8(&ptr, MQTTSN_CONNECT);
-        write_uint8(&ptr, flags);
-        write_uint8(&ptr, 1);  // Protocol version
-        write_uint16(&ptr, duration);
-        write_string(&ptr, client_id, client_id_len);
-
-    exit:
-        return result;
-    }
-
-    /**
-     * Unpack the Connect Acknowledge message
-     */
-    uint8_t
-    unpack_connack(uint8_t* return_code, uint8_t* buffer, uint16_t buffer_len)
+    unpack_suback(uint8_t* qos, uint16_t* topic_id, uint8_t* msg_id, uint8_t* return_code, 
+                  uint8_t* buffer, uint16_t buffer_len)
     {
         uint8_t result = 0;    
         uint8_t* ptr = buffer;
+        Flags flags;
 
+        flags.all = read_uint8(&ptr);
+        *qos = flags.bits.qos;
+        *topic_id = read_uint16(&ptr);
+        *msg_id = read_uint16(&ptr);
         *return_code = read_uint8(&ptr);
 
         return result;
     }
 
     /**
-     * Pack the Connect message
+     * Pack the UnSubscribe message
      */
     uint16_t
-    pack_disconnect(uint8_t* buffer, uint16_t buffer_len, uint16_t duration)
+    pack_unsubscribe(uint8_t* buffer, uint16_t buffer_len, 
+                     uint16_t msg_id, const char* topic_name)
     {
-        uint16_t result = 0;    
+        uint16_t result = 0;
         uint8_t* ptr = buffer;
+        Flags flags;
+        uint16_t topic_name_len = strlen(topic_name);
 
-        write_uint16(&ptr, duration);
+        if (!(result = write_length(&ptr, buffer_len, 4 + topic_name_len))) {
+            goto exit;
+        }
+        write_uint8(&ptr, MQTTSN_UNSUBSCRIBE);
+        flags.all = 0;
+        flags.bits.topic_id_type = 0b00;  // Topic name
+        write_uint8(&ptr, flags.all);
+        write_uint16(&ptr, msg_id);
+        write_string(&ptr, topic_name, topic_name_len);
 
+    exit:
         return result;
     }
 
-    /**
-     * Pack the Ping Request message
-     */
     uint16_t
-    pack_pingreq(uint8_t* buffer, uint16_t buffer_len, const char* client_id)
+    pack_unsubscribe(uint8_t* buffer, uint16_t buffer_len, 
+                     uint16_t msg_id, uint16_t topic_id)
     {
-        uint16_t result = 0;    
+        uint16_t result = 0;
         uint8_t* ptr = buffer;
-        uint16_t client_id_len = strlen(client_id);
-        
-        if ((result = write_length(&ptr, buffer_len, 1 + client_id_len)) == 0) {
+        Flags flags;
+
+        if (!(result = write_length(&ptr, buffer_len, 6))) {
             goto exit;
         }
-        write_uint8(&ptr, MQTTSN_PINGREQ);
-        write_string(&ptr, client_id, client_id_len);
+        write_uint8(&ptr, MQTTSN_UNSUBSCRIBE);
+        flags.all = 0;
+        flags.bits.topic_id_type = 0b01;  // Topic id
+        write_uint8(&ptr, flags.all);
+        write_uint16(&ptr, msg_id);
+        write_uint16(&ptr, topic_id);
 
     exit:
         return result;
     }
 
     /**
-     * Unpack the Ping Response message
+     * Unpack the UnSubscribe Acknowledge message
      */
     uint8_t
-    unpack_pingresp(uint8_t* buffer, uint16_t buffer_len)
+    unpack_unsuback(uint16_t* msg_id, 
+                    uint8_t* buffer, uint16_t buffer_len)
     {
-        // Basically a no-op
-        return 0;
+        uint8_t result = 0;    
+        uint8_t* ptr = buffer;
+
+        *msg_id = read_uint16(&ptr);
+
+        return result;
     }
 
 } // !MQTTSN
