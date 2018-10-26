@@ -1,5 +1,5 @@
-#include "mqttsn_discovery.h"
 #include "mqttsn_packet.h"
+#include "mqttsn_discovery.h"
 
 namespace MQTTSN
 {
@@ -33,7 +33,7 @@ namespace MQTTSN
         if ((result = write_length(&ptr, buffer_len, 2)) == 0) {
             goto exit;
         }
-        write_uint8(&ptr, MQTTSN_SEARCHGW);
+        write_uint8(&ptr, SEARCHGW);
         write_uint8(&ptr, radius);
 
     exit:

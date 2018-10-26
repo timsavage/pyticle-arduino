@@ -6,17 +6,41 @@
 namespace MQTTSN
 {
 
-enum MsgTypes
+enum MsgTypes : uint8_t
 {
-	MQTTSN_ADVERTISE, MQTTSN_SEARCHGW, MQTTSN_GWINFO, MQTTSN_RESERVED1, 
-	MQTTSN_CONNECT, MQTTSN_CONNACK,
-	MQTTSN_WILLTOPICREQ, MQTTSN_WILLTOPIC, MQTTSN_WILLMSGREQ, MQTTSN_WILLMSG, 
-	MQTTSN_REGISTER, MQTTSN_REGACK,
-	MQTTSN_PUBLISH, MQTTSN_PUBACK, MQTTSN_PUBCOMP, MQTTSN_PUBREC, MQTTSN_PUBREL, MQTTSN_RESERVED2,
-	MQTTSN_SUBSCRIBE, MQTTSN_SUBACK, MQTTSN_UNSUBSCRIBE, MQTTSN_UNSUBACK, 
-	MQTTSN_PINGREQ, MQTTSN_PINGRESP,
-	MQTTSN_DISCONNECT, MQTTSN_RESERVED3, 
-	MQTTSN_WILLTOPICUPD, MQTTSN_WILLTOPICRESP, MQTTSN_WILLMSGUPD, MQTTSN_WILLMSGRESP,
+	ADVERTISE, SEARCHGW, GWINFO, RESERVED1, 
+	CONNECT, CONNACK,
+	WILLTOPICREQ, WILLTOPIC, WILLMSGREQ, WILLMSG, 
+	REGISTER, REGACK,
+	PUBLISH, PUBACK, PUBCOMP, PUBREC, PUBREL, RESERVED2,
+	SUBSCRIBE, SUBACK, UNSUBSCRIBE, UNSUBACK, 
+	PINGREQ, PINGRESP,
+	DISCONNECT, RESERVED3, 
+	WILLTOPICUPD, WILLTOPICRESP, WILLMSGUPD, WILLMSGRESP,
+};
+
+enum TopicTypes : uint8_t
+{
+	TOPIC_TYPE_NAME,        // Normal topic type
+	TOPIC_TYPE_PREDEFINED,  // Predefined topic id
+	TOPIC_TYPE_SHORT,       // Short topic name
+};
+
+enum QosLevels : uint8_t
+{
+	QoSLevel0,
+	QoSLevel1,
+	QoSLevel2,
+	QoSLevelNoRegistration,
+};
+
+enum ReturnCodes : uint8_t
+{
+	Accepted,
+	Congested,
+	InvalidTopicID,
+	NotSupported,
+	// Reserved
 };
 
 typedef union
@@ -24,12 +48,12 @@ typedef union
 	uint8_t all;
 	struct
 	{
-		uint8_t topic_id_type: 2;
-		uint8_t clean_session: 1;
-		uint8_t will: 1;
+		uint8_t topic_id_type: 2;  // See TopicTypes enum
+		uint8_t clean_session: 1;  // Clear the existing session on connect
+		uint8_t will: 1;           // Client wishes to set a Will during connect
 		uint8_t retain: 1;
-		uint8_t qos: 2;
-		uint8_t dup: 1;
+		uint8_t qos: 2;            // QoS level 0-2 (0b00, 0b01, 0b10)
+		uint8_t dup: 1;            // Set if this message is being retransmitted
 	} bits;
 } Flags;
 

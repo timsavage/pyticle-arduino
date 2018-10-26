@@ -1,5 +1,5 @@
-#include "mqttsn_session.h"
 #include "mqttsn_packet.h"
+#include "mqttsn_session.h"
 
 namespace MQTTSN
 {
@@ -11,7 +11,7 @@ namespace MQTTSN
     pack_connect(uint8_t* buffer, uint16_t buffer_len, 
                  uint8_t will, uint8_t clean_session, uint16_t duration, const char* client_id)
     {
-        uint16_t result = 0;    
+        uint16_t result = 0;
         uint8_t* ptr = buffer;
         Flags flags;
         uint16_t client_id_len = strlen(client_id);
@@ -19,7 +19,7 @@ namespace MQTTSN
         if (!(result = write_length(&ptr, buffer_len, 5 + client_id_len))) {
             goto exit;
         }
-        write_uint8(&ptr, MQTTSN_CONNECT);
+        write_uint8(&ptr, CONNECT);
         flags.all = 0;
         flags.bits.will = will;
         flags.bits.clean_session = clean_session;
@@ -76,21 +76,11 @@ namespace MQTTSN
         if ((result = write_length(&ptr, buffer_len, 1 + client_id_len)) == 0) {
             goto exit;
         }
-        write_uint8(&ptr, MQTTSN_PINGREQ);
+        write_uint8(&ptr, PINGREQ);
         write_string(&ptr, client_id, client_id_len);
 
     exit:
         return result;
-    }
-
-    /**
-     * Unpack the Ping Response message
-     */
-    uint8_t
-    unpack_pingresp(uint8_t* buffer, uint16_t buffer_len)
-    {
-        // Basically a no-op
-        return 0;
     }
 
 } // !MQTTSN

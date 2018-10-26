@@ -34,12 +34,6 @@ namespace MQTTSN
     pack_pingreq(uint8_t* buffer, uint16_t buffer_len, 
                  const char* client_id);
 
-    /**
-     * Unpack the Ping Response message
-     */
-    uint8_t
-    unpack_pingresp(uint8_t* buffer, uint16_t buffer_len);
-
 } //!MQTTSN
 
 #endif //!_mqttsn_session__h

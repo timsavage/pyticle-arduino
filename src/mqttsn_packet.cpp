@@ -19,7 +19,7 @@ static char* message_names[] =
 const char*
 message_name(uint8_t msg_type)
 {
-    return (msg_type <= MQTTSN_WILLMSGRESP) ? message_names[msg_type] : "UNKNOWN";
+    return (msg_type <= WILLMSGRESP) ? message_names[msg_type] : "UNKNOWN";
 }
 
 /**

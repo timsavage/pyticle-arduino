@@ -7,6 +7,22 @@ namespace MQTTSN
 {
 
     /**
+     * Pack the Register message
+     */
+    uint16_t 
+    pack_register(uint8_t* buffer, uint16_t buffer_len, 
+                  uint16_t topic_id, uint16_t msg_id, const char* topic_name);
+
+
+    /**
+     * Unpack the Register Acknowledge message
+     */
+    uint8_t
+    unpack_regack(uint8_t* qos, uint16_t* topic_id, uint8_t* msg_id, uint8_t* return_code, 
+                  uint8_t* buffer, uint16_t buffer_len);
+
+
+    /**
      * Pack the Subscribe message
      */
     uint16_t 
@@ -23,6 +39,7 @@ namespace MQTTSN
     uint8_t
     unpack_suback(uint8_t* qos, uint16_t* topic_id, uint8_t* msg_id, uint8_t* return_code, 
                   uint8_t* buffer, uint16_t buffer_len);
+
 
     /**
      * Pack the UnSubscribe message
