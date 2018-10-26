@@ -22,16 +22,16 @@ enum MsgTypes : uint8_t
 enum TopicTypes : uint8_t
 {
 	TOPIC_TYPE_NAME,        // Normal topic type
-	TOPIC_TYPE_PREDEFINED,  // Predefined topic id
+	TOPIC_TYPE_PREDEFINED,  // Pre-defined ID
 	TOPIC_TYPE_SHORT,       // Short topic name
 };
 
 enum QosLevels : uint8_t
 {
-	QoSLevel0,
-	QoSLevel1,
-	QoSLevel2,
-	QoSLevelNoRegistration,
+	QoSLevel0,             // Fire and Forget
+	QoSLevel1,             // Acknowledged deliver
+	QoSLevel2,             // Assured Delivery
+	QoSLevelNoConnection,  // No Connection required
 };
 
 enum ReturnCodes : uint8_t
@@ -120,7 +120,7 @@ read_uint16(uint8_t** buffer);
  * Write an unsigned short to the buffer
  */
 void 
-write_uint16(uint8_t** buffer, uint8_t value);
+write_uint16(uint8_t** buffer, uint16_t value);
 
 /**
  * Write a char array to the buffer

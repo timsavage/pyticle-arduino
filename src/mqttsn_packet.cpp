@@ -33,7 +33,7 @@ message_len(uint16_t length)
 
 /**
  * Read the length out of the buffer
- * @return 0 if there is an error else the message length
+ * @return 0 if there is an error else the message length (excluding length value)
  */
 uint16_t
 read_length(uint8_t** buffer, uint16_t buffer_len)
@@ -48,7 +48,9 @@ read_length(uint8_t** buffer, uint16_t buffer_len)
         if (buffer_len < 3) {
             return 1;
         }
-        result = read_uint16(buffer);
+        result = read_uint16(buffer) - 3;
+    } else {
+        result -= 1;
     }
 
     return result;
@@ -114,7 +116,7 @@ read_uint16(uint8_t** buffer)
  * Write an unsigned short to the buffer
  */
 void 
-write_uint16(uint8_t** buffer, uint8_t value)
+write_uint16(uint8_t** buffer, uint16_t value)
 {
     **buffer = (uint8_t)(value >> 8);
     (*buffer)++;
@@ -122,6 +124,9 @@ write_uint16(uint8_t** buffer, uint8_t value)
     (*buffer)++;
 }
 
+/**
+ * Write a string to the buffer
+ */
 void
 write_string(uint8_t** buffer, const char* str, uint16_t str_len)
 {
