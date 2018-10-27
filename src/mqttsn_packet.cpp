@@ -1,3 +1,5 @@
+#include <string.h>
+
 #include "mqttsn_packet.h"
 
 namespace MQTTSN 

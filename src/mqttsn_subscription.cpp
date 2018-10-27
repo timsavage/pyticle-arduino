@@ -1,3 +1,5 @@
+#include <string.h>
+
 #include "mqttsn_packet.h"
 #include "mqttsn_subscription.h"
 

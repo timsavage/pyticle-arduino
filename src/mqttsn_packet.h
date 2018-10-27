@@ -1,4 +1,4 @@
-#include <Arduino.h>
+#include <stdint.h>
 
 #ifndef _mqttsn_packet__h
 #define _mqttsn_packet__h
@@ -57,20 +57,6 @@ typedef union
 	} bits;
 } Flags;
 
-
-class MessageID
-{
-	public:
-		MessageID() : _msg_id(0) {}
-	
-		uint16_t next() 
-		{
-			return _msg_id = (_msg_id == 0xFFFF) ? 1 : ++_msg_id;
-		}
-	
-	private:
-		uint16_t _msg_id;
-};
 
 /**
  * Get the name of a message
