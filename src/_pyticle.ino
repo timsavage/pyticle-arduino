@@ -1,33 +1,29 @@
 #include <ESP8266WiFi.h>
 #include <WiFiUdp.h>
 
+// Dump packet data to Serial
+#define MQTTSN_DEBUG
+
+#include "mqttsn_client.h"
 #include "mqttsn_packet.h"
 #include "mqttsn_discovery.h"
 #include "mqttsn_session.h"
 #include "mqttsn_subscription.h"
 #include "mqttsn_publish.h"
 
-#define MAX_BUFFER 0x400
 #define DELAY_TIME 300000  //ms (300s)
 
-uint8_t buffer[MAX_BUFFER];
-
-MQTTSN::MessageID message_id;
 WiFiUDP udp;
-IPAddress search_ip = {192, 168, 1, 255};
-IPAddress gateway_ip;
-const uint16_t port = 1883;
-
-uint32_t nextPing = 0;
+MQTTSN::Client client(&udp);
 
 
-void dumpBuffer(uint16_t msg_len) 
-{
-    for (uint16_t idx=0; idx < msg_len; idx++) {
-        Serial.printf("%02x ", buffer[idx]);
-    }
-    Serial.printf(": len=%d\n", msg_len);
-}
+// void dumpBuffer(uint16_t msg_len) 
+// {
+//     for (uint16_t idx=0; idx < msg_len; idx++) {
+//         Serial.printf("%02x ", buffer[idx]);
+//     }
+//     Serial.printf(": len=%d\n", msg_len);
+// }
 
 void initNetwork()
 {
@@ -46,35 +42,10 @@ void initNetwork()
     Serial.println("  [OK]");
 }
 
-void beginMessage(void)
-{
-    memset(buffer, 0, MAX_BUFFER);
-}
-
-void sendMessage(IPAddress ip, uint16_t msg_len)
-{
-    if (msg_len == 0) {
-        Serial.println("Error sending message.");
-    } else {
-        udp.beginPacket(ip, port); 
-            udp.write(buffer, msg_len);
-        udp.endPacket();
-    }
-
-    Serial.print("Sent packet: "); dumpBuffer(msg_len);
-}
-
 void initMQTTSN()
 {
-    uint16_t msg_len;
-
     Serial.println("- Init MQTTSN...");
-  
-    udp.begin(1883);
-
-    Serial.print("  + Searching...");
-    beginMessage();
-    sendMessage(search_ip, MQTTSN::pack_searchgw(buffer, MAX_BUFFER, 2));
+    client.begin("Pyticle-Client01", IPAddress(192, 168, 1, 255));
 }
 
 
@@ -90,87 +61,89 @@ void setup()
 
 void mqttsn_loop() 
 {
-    uint8_t gateway_id;
-    uint16_t duration;
+    client.loop();
 
-    uint16_t buffer_len;
-    uint8_t* message_ptr;
-    uint16_t msg_len;
-    uint8_t msg_type;
-    MQTTSN::Flags flags;
-    uint16_t topic_id;
-    uint16_t msg_id;
-    uint8_t* data_ptr;
-    uint16_t data_len;
+    // uint8_t gateway_id;
+    // uint16_t duration;
 
-    while (udp.parsePacket()) {
-        memset(buffer, 0, MAX_BUFFER);
-        if ((buffer_len = udp.read(buffer, 255)) == 0) {
-            continue;
-        }
-        // Read data
-        message_ptr = buffer;
-        if ((msg_len = MQTTSN::read_length(&message_ptr, buffer_len)) == 0) {
-            continue;
-        }
-        msg_type = MQTTSN::read_uint8(&message_ptr);
-        Serial.print("Recieved: "); Serial.print(MQTTSN::message_name(msg_type)); 
-        Serial.printf(" from %s:%d\n", udp.remoteIP().toString().c_str(), udp.remotePort());
+    // uint16_t buffer_len;
+    // uint8_t* message_ptr;
+    // uint16_t msg_len;
+    // uint8_t msg_type;
+    // MQTTSN::Flags flags;
+    // uint16_t topic_id;
+    // uint16_t msg_id;
+    // uint8_t* data_ptr;
+    // uint16_t data_len;
 
-        switch(msg_type) {
-            case MQTTSN::ADVERTISE:
-                if (!MQTTSN::unpack_advertise(&gateway_id, &duration, message_ptr, msg_len)) {
-                    Serial.printf("Advertisement from %d: ", gateway_id); Serial.println(udp.remoteIP());
-                }
-                break;
+    // while (udp.parsePacket()) {
+    //     memset(buffer, 0, MAX_BUFFER);
+    //     if ((buffer_len = udp.read(buffer, 255)) == 0) {
+    //         continue;
+    //     }
+    //     // Read data
+    //     message_ptr = buffer;
+    //     if ((msg_len = MQTTSN::read_length(&message_ptr, buffer_len)) == 0) {
+    //         continue;
+    //     }
+    //     msg_type = MQTTSN::read_uint8(&message_ptr);
+    //     Serial.print("Recieved: "); Serial.print(MQTTSN::message_name(msg_type)); 
+    //     Serial.printf(" from %s:%d\n", udp.remoteIP().toString().c_str(), udp.remotePort());
 
-            case MQTTSN::GWINFO:
-                gateway_ip = udp.remoteIP();
-                Serial.print("Found gateway: "); Serial.println(gateway_ip);
+    //     switch(msg_type) {
+    //         case MQTTSN::ADVERTISE:
+    //             if (!MQTTSN::unpack_advertise(&gateway_id, &duration, message_ptr, msg_len)) {
+    //                 Serial.printf("Advertisement from %d: ", gateway_id); Serial.println(udp.remoteIP());
+    //             }
+    //             break;
 
-                beginMessage();
-                sendMessage(search_ip, MQTTSN::pack_connect(buffer, MAX_BUFFER, 0, 1, 300, "Pyticle-Client01"));
-                break;
+    //         case MQTTSN::GWINFO:
+    //             gateway_ip = udp.remoteIP();
+    //             Serial.print("Found gateway: "); Serial.println(gateway_ip);
 
-            case MQTTSN::CONNACK:
-                Serial.println("Connected.");
-                nextPing = millis() + DELAY_TIME;
+    //             beginMessage();
+    //             sendMessage(search_ip, MQTTSN::pack_connect(buffer, MAX_BUFFER, 0, 1, 300, "Pyticle-Client01"));
+    //             break;
 
-                // Subscribe
-                beginMessage();
-                sendMessage(search_ip, MQTTSN::pack_subscribe(buffer, MAX_BUFFER, 0, 0, message_id.next(), "environmental"));
-                break;
+    //         case MQTTSN::CONNACK:
+    //             Serial.println("Connected.");
+    //             nextPing = millis() + DELAY_TIME;
 
-            case MQTTSN::PINGRESP:
-                Serial.println("Received ping response...");
-                break;
+    //             // Subscribe
+    //             beginMessage();
+    //             sendMessage(search_ip, MQTTSN::pack_subscribe(buffer, MAX_BUFFER, 0, 0, message_id.next(), "environmental"));
+    //             break;
 
-            case MQTTSN::SUBACK:
-                break;
+    //         case MQTTSN::PINGRESP:
+    //             Serial.println("Received ping response...");
+    //             break;
 
-            case MQTTSN::PUBLISH:
-                MQTTSN::unpack_publish(&flags, &topic_id, &msg_id, &data_ptr, &data_len, message_ptr, msg_len);
-                Serial.print("Publish: topic_id="); Serial.print(topic_id); Serial.print("; msg_id="); Serial.print(msg_id);
-                Serial.print("; data_ptr="); Serial.print((char*)data_ptr); Serial.print("; data_len="); Serial.println(data_len);
-                sendMessage(search_ip, MQTTSN::pack_puback(buffer, MAX_BUFFER, topic_id, msg_id, MQTTSN::Accepted));
-                break;
+    //         case MQTTSN::SUBACK:
+    //             break;
 
-            default:
-                Serial.println("Unknown message");
-                break;
-        }
-    }
+    //         case MQTTSN::PUBLISH:
+    //             MQTTSN::unpack_publish(&flags, &topic_id, &msg_id, &data_ptr, &data_len, message_ptr, msg_len);
+    //             Serial.print("Publish: topic_id="); Serial.print(topic_id); Serial.print("; msg_id="); Serial.print(msg_id);
+    //             Serial.print("; data_ptr="); Serial.print((char*)data_ptr); Serial.print("; data_len="); Serial.println(data_len);
+    //             sendMessage(search_ip, MQTTSN::pack_puback(buffer, MAX_BUFFER, topic_id, msg_id, MQTTSN::Accepted));
+    //             break;
 
-    if (nextPing && nextPing < millis()) {
-        nextPing = millis() + DELAY_TIME;
-        Serial.println("Sending ping request...");
-        beginMessage();
-        sendMessage(search_ip, MQTTSN::pack_pingreq(buffer, MAX_BUFFER, "Pyticle-Client01"));
-    }
+    //         default:
+    //             Serial.println("Unknown message");
+    //             break;
+    //     }
+    // }
+
+    // if (nextPing && nextPing < millis()) {
+    //     nextPing = millis() + DELAY_TIME;
+    //     Serial.println("Sending ping request...");
+    //     beginMessage();
+    //     sendMessage(search_ip, MQTTSN::pack_pingreq(buffer, MAX_BUFFER, "Pyticle-Client01"));
+    // }
 }
 
 void loop()
 {
-    mqttsn_loop();
+    client.loop();
     delay(1000);
 }
