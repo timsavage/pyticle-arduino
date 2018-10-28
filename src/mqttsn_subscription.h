@@ -18,7 +18,7 @@ namespace MQTTSN
      * Unpack the Register Acknowledge message
      */
     uint8_t
-    unpack_regack(uint8_t* qos, uint16_t* topic_id, uint8_t* msg_id, uint8_t* return_code, 
+    unpack_regack(QosLevel* qos, uint16_t* topic_id, uint8_t* msg_id, ReturnCode* return_code, 
                   uint8_t* buffer, uint16_t buffer_len);
 
 
@@ -27,17 +27,17 @@ namespace MQTTSN
      */
     uint16_t 
     pack_subscribe(uint8_t* buffer, uint16_t buffer_len, 
-                   uint8_t dup, uint8_t qos, uint16_t msg_id, const char* topic_name);
+                   uint8_t dup, QosLevel qos, uint16_t msg_id, const char* topic_name);
 
     uint16_t 
     pack_subscribe(uint8_t* buffer, uint16_t buffer_len, 
-                   uint8_t dup, uint8_t qos, uint16_t msg_id, uint16_t topic_id);
+                   uint8_t dup, QosLevel qos, uint16_t msg_id, uint16_t topic_id);
 
     /**
      * Unpack the Subscribe Acknowledge message
      */
     uint8_t
-    unpack_suback(uint8_t* qos, uint16_t* topic_id, uint8_t* msg_id, uint8_t* return_code, 
+    unpack_suback(QosLevel* qos, uint16_t* topic_id, uint8_t* msg_id, ReturnCode* return_code, 
                   uint8_t* buffer, uint16_t buffer_len);
 
 

@@ -1,12 +1,8 @@
-#include <Arduino.h>
-
 #include "mqttsn_client.h"
 #include "mqttsn_packet.h"
 #include "mqttsn_discovery.h"
 #include "mqttsn_session.h"
 #include "mqttsn_subscription.h"
-
-#define MQTTSN_DEBUG
 
 
 MQTTSN::Client::Client(UDP* sock, int port)
@@ -54,17 +50,39 @@ void MQTTSN::Client::loop()
         msg_len--;  // Remove one byte
 
         #if defined(MQTTSN_DEBUG)
-        Serial.print("Recieved: "); Serial.print(MQTTSN::message_name(msg_type)); 
-        Serial.printf(" from %s:%d\n", m_sock->remoteIP().toString().c_str(), m_sock->remotePort());
+        DEBUG_LOG.printf(
+            "Recieved: %s from %s: %d\n",
+            MQTTSN::message_name(msg_type),
+            m_sock->remoteIP().toString().c_str(),
+            m_sock->remotePort()
+        );
         #endif
 
         switch(msg_type) {
+        case MQTTSN::ADVERTISE:
+            break;
+
         case MQTTSN::GWINFO:
             gwinfo(msg_ptr, msg_len);
             break;
+
         case MQTTSN::CONNACK:
             connack(msg_ptr, msg_len);
             break;
+
+        case MQTTSN::PINGRESP:
+            pingresp(msg_ptr, msg_len);
+            break;
+        
+        case MQTTSN::SUBACK:
+            break;
+        
+        case MQTTSN::PUBLISH:
+            break;
+        
+        default:
+            break;
+
         }
     }
 }
@@ -101,5 +119,10 @@ void MQTTSN::Client::connack(uint8_t* msg_ptr, uint16_t msg_len)
 
     // Subscribe
     memset(m_buffer, 0, MQTTSN_BUFFER_SIZE);
-    send_message(MQTTSN::pack_subscribe(m_buffer, MQTTSN_BUFFER_SIZE, 0, 0, m_msg_id++, "environmental"));
+    send_message(MQTTSN::pack_subscribe(m_buffer, MQTTSN_BUFFER_SIZE, 0, QoSLevel0, m_msg_id++, "environmental"));
+}
+
+void MQTTSN::Client::pingresp(uint8_t* msg_ptr, uint16_t msg_len)
+{
+
 }

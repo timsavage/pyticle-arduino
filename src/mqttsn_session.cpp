@@ -26,7 +26,7 @@ namespace MQTTSN
         flags.bits.will = will;
         flags.bits.clean_session = clean_session;
         write_uint8(&ptr, flags.all);
-        write_uint8(&ptr, 1);  // Protocol version
+        write_uint8(&ptr, MQTTSN_PROTOCOL_VERSION);
         write_uint16(&ptr, duration);
         write_string(&ptr, client_id, client_id_len);
 
@@ -38,13 +38,13 @@ namespace MQTTSN
      * Unpack the Connect Acknowledge message
      */
     uint8_t
-    unpack_connack(uint8_t* return_code, 
+    unpack_connack(ReturnCode* return_code, 
                    uint8_t* buffer, uint16_t buffer_len)
     {
         uint8_t result = 0;    
         uint8_t* ptr = buffer;
 
-        *return_code = read_uint8(&ptr);
+        *return_code = (ReturnCode)read_uint8(&ptr);
 
         return result;
     }

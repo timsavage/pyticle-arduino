@@ -17,7 +17,7 @@ namespace MQTTSN
      * Unpack the Connect Acknowledge message
      */
     uint8_t
-    unpack_connack(uint8_t* return_code, 
+    unpack_connack(ReturnCode* return_code, 
                    uint8_t* buffer, uint16_t buffer_len);
 
     /**

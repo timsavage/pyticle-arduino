@@ -1,3 +1,4 @@
+#include <Arduino.h>
 #include <Udp.h>
 
 #ifndef _mqttsn_client__h
@@ -6,6 +7,9 @@
 #ifndef MQTTSN_BUFFER_SIZE
     #define MQTTSN_BUFFER_SIZE 0x400
 #endif //!MQTTSN_BUFFER_SIZE
+
+#define MQTTSN_DEBUG
+#define DEBUG_LOG Serial
 
 namespace MQTTSN 
 {
@@ -26,6 +30,12 @@ namespace MQTTSN
          */
         void begin(const char* client_id, IPAddress search_ip, uint32_t duration=300);
 
+        void connect();
+
+        uint16_t register_topic(const char* topic_name);
+
+        void publish();
+
         /**
          * Process loop entry point.
          */
@@ -41,6 +51,7 @@ namespace MQTTSN
         // Message handlers
         void gwinfo(uint8_t* msg_ptr, uint16_t msg_len);
         void connack(uint8_t* msg_ptr, uint16_t msg_len);
+        void pingresp(uint8_t* msg_ptr, uint16_t msg_len);
 
     private:
         UDP* m_sock;

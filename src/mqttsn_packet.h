@@ -6,7 +6,9 @@
 namespace MQTTSN
 {
 
-enum MsgTypes : uint8_t
+#define MQTTSN_PROTOCOL_VERSION 0x01
+
+enum MsgType : uint8_t
 {
 	ADVERTISE, SEARCHGW, GWINFO, RESERVED1, 
 	CONNECT, CONNACK,
@@ -19,14 +21,14 @@ enum MsgTypes : uint8_t
 	WILLTOPICUPD, WILLTOPICRESP, WILLMSGUPD, WILLMSGRESP,
 };
 
-enum TopicTypes : uint8_t
+enum TopicType : uint8_t
 {
 	TOPIC_TYPE_NAME,        // Normal topic type
 	TOPIC_TYPE_PREDEFINED,  // Pre-defined ID
 	TOPIC_TYPE_SHORT,       // Short topic name
 };
 
-enum QosLevels : uint8_t
+enum QosLevel : uint8_t
 {
 	QoSLevel0,             // Fire and Forget
 	QoSLevel1,             // Acknowledged deliver
@@ -34,7 +36,7 @@ enum QosLevels : uint8_t
 	QoSLevelNoConnection,  // No Connection required
 };
 
-enum ReturnCodes : uint8_t
+enum ReturnCode : uint8_t
 {
 	Accepted,
 	Congested,

@@ -52,7 +52,7 @@ namespace MQTTSN
      */
     uint16_t 
     pack_subscribe(uint8_t* buffer, uint16_t buffer_len, 
-                   uint8_t dup, uint8_t qos, uint16_t msg_id, const char* topic_name)
+                   uint8_t dup, QosLevel qos, uint16_t msg_id, const char* topic_name)
     {
         uint16_t result = 0;
         uint8_t* ptr = buffer;
@@ -65,7 +65,7 @@ namespace MQTTSN
         write_uint8(&ptr, SUBSCRIBE);
         flags.all = 0;
         flags.bits.dup = dup;
-        flags.bits.qos = qos;
+        flags.bits.qos = (uint8_t)qos;
         flags.bits.topic_id_type = TOPIC_TYPE_NAME;
         write_uint8(&ptr, flags.all);
         write_uint16(&ptr, msg_id);
@@ -77,7 +77,7 @@ namespace MQTTSN
                    
     uint16_t 
     pack_subscribe(uint8_t* buffer, uint16_t buffer_len, 
-                   uint8_t dup, uint8_t qos, uint16_t msg_id, uint16_t topid_id)
+                   uint8_t dup, QosLevel qos, uint16_t msg_id, uint16_t topid_id)
     {
         uint16_t result = 0;
         uint8_t* ptr = buffer;
@@ -89,7 +89,7 @@ namespace MQTTSN
         write_uint8(&ptr, SUBSCRIBE);
         flags.all = 0;
         flags.bits.dup = dup;
-        flags.bits.qos = qos;
+        flags.bits.qos = (uint8_t)qos;
         flags.bits.topic_id_type = TOPIC_TYPE_PREDEFINED;
         write_uint8(&ptr, flags.all);
         write_uint16(&ptr, msg_id);
@@ -103,7 +103,7 @@ namespace MQTTSN
      * Unpack the Subscribe Acknowledge message
      */
     uint8_t
-    unpack_suback(uint8_t* qos, uint16_t* topic_id, uint8_t* msg_id, uint8_t* return_code, 
+    unpack_suback(QosLevel* qos, uint16_t* topic_id, uint8_t* msg_id, ReturnCode* return_code, 
                   uint8_t* buffer, uint16_t buffer_len)
     {
         uint8_t result = 0;    
@@ -111,10 +111,10 @@ namespace MQTTSN
         Flags flags;
 
         flags.all = read_uint8(&ptr);
-        *qos = flags.bits.qos;
+        *qos = (QosLevel)flags.bits.qos;
         *topic_id = read_uint16(&ptr);
         *msg_id = read_uint16(&ptr);
-        *return_code = read_uint8(&ptr);
+        *return_code = (ReturnCode)read_uint8(&ptr);
 
         return result;
     }
