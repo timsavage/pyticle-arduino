@@ -28,6 +28,21 @@ namespace MQTTSN
     exit:
         return result;
     }
+    
+    uint8_t 
+    unpack_register(uint16_t* topic_id, uint16_t* msg_id, char** topic_name, uint16_t* topic_len,
+                    uint8_t* buffer, uint16_t buffer_len)
+    {
+        uint8_t result = 0;    
+        uint8_t* ptr = buffer;
+
+        *topic_id = read_uint16(&ptr);
+        *msg_id = read_uint16(&ptr);
+        *topic_len = buffer_len - 4;
+        *topic_name = (char*)ptr;
+
+        return result;
+    }
 
     /**
      * Unpack the Register Acknowledge message

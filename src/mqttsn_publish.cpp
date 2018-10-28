@@ -1,3 +1,5 @@
+#include <string.h>
+
 #include "mqttsn_packet.h"
 #include "mqttsn_publish.h"
 
@@ -9,7 +11,7 @@ namespace MQTTSN
      */
     uint16_t 
     pack_publish(uint8_t* buffer, uint16_t buffer_len, 
-                 uint8_t dup, QosLevel qos, uint8_t retain, uint16_t topic_id, uint16_t msg_id, const char* data, uint16_t data_len)
+                 uint8_t dup, QosLevel qos, uint8_t retain, uint16_t topic_id, uint16_t msg_id, const void* data, uint16_t data_len)
     {
         uint16_t result = 0;
         uint8_t* ptr = buffer;
@@ -27,7 +29,7 @@ namespace MQTTSN
         write_uint8(&ptr, flags.all);
         write_uint16(&ptr, topic_id);
         write_uint16(&ptr, msg_id);
-        write_string(&ptr, data, data_len);
+        memcpy(ptr, data, data_len);
 
     exit:
         return result;
@@ -37,7 +39,7 @@ namespace MQTTSN
      * Unpack the Publish message
      */
     uint8_t 
-    unpack_publish(Flags* flags, uint16_t* topic_id, uint16_t* msg_id, uint8_t** data, uint16_t* data_len,
+    unpack_publish(Flags* flags, uint16_t* topic_id, uint16_t* msg_id, void** data, uint16_t* data_len,
                    uint8_t* buffer, uint16_t buffer_len)
     {
         uint8_t result = 0;    
