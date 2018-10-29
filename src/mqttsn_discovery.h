@@ -18,7 +18,7 @@ namespace MQTTSN
      */
     uint16_t
     pack_searchgw(uint8_t* buffer, uint16_t buffer_len, 
-                  uint8_t radius);
+                  uint8_t radius=1);
 
     /**
      * Gateway Info message
