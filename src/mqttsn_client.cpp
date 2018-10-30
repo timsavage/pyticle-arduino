@@ -61,9 +61,8 @@ MsgType Client::handle_message(Timeout& timeout)
     MsgType msg_type;
 
     while (m_sock->parsePacket()) {
-        memset(m_buffer, 0, MQTTSN_BUFFER_SIZE);
-
         // Read data into buffer
+        clear_buffer();
         if ((buffer_len = m_sock->read(m_buffer, MQTTSN_BUFFER_SIZE)) == 0) {
             continue;
         }
@@ -126,6 +125,11 @@ Result Client::wait_for(MsgType msg_type, Timeout& timeout)
     return Success;
 }
 
+void Client::clear_buffer()
+{
+    memset(m_buffer, 0, MQTTSN_BUFFER_SIZE);
+}
+    
 void Client::send_message(uint16_t msg_len)
 {
     // send_message(msg_len, m_gateway_ip);
@@ -144,7 +148,7 @@ bool Client::search()
     Timeout timeout(1000);
 
     // Send gateway search
-    memset(m_buffer, 0, MQTTSN_BUFFER_SIZE);
+    clear_buffer();
     send_message(pack_searchgw(m_buffer, MQTTSN_BUFFER_SIZE), m_search_ip);
 
     if (wait_for(GWINFO, timeout) == Success) {
@@ -158,7 +162,7 @@ bool Client::connect()
     ReturnCode rc;
 
     // Initiate connection
-    memset(m_buffer, 0, MQTTSN_BUFFER_SIZE);
+    clear_buffer();
     send_message(pack_connect(m_buffer, MQTTSN_BUFFER_SIZE, 0, 1, m_duration, m_client_id));
 
     if (wait_for(CONNACK, connect_timer) == Success) {
